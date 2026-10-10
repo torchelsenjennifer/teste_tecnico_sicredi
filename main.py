@@ -1,4 +1,5 @@
 
+import csv
 import json
 from pathlib import Path
 
@@ -53,6 +54,28 @@ def filtrar_aprovados(solicitacoes):
 
 	return aprovados, ignorados
 
+def gerar_csv(aprovados):
+	caminho = Path(__file__).resolve().parent / "aprovados.csv"
+
+	try:
+		with open(caminho, "w", newline="", encoding="utf-8") as arquivo:
+			colunas = ["id", "nome", "cpf"]
+
+			escritor = csv.DictWriter(
+				arquivo,
+				fieldnames=colunas,
+				delimiter=","
+			)
+
+			escritor.writeheader()
+			escritor.writerows(aprovados)
+
+		return True
+
+	except(OSError, csv.Error) as erro:
+		print(f"Erro ao gerar o arquivo CSV dos usuários APROVADOS: {erro}")
+		return False
+
 def main():
 	solicitacoes = carregar_solicitacoes()
 
@@ -62,6 +85,9 @@ def main():
 		print(f"Total de registros lidos: {len(solicitacoes)}")
 		print(f"Total de registros aprovados: {len(aprovados)}")
 		print(f"Total de registros ignorados: {len(ignorados)}")
+
+		if gerar_csv(aprovados):
+			print("Arquivo aprovados.csv gerado com sucesso.")
 
 if __name__ == "__main__":
 	main()
