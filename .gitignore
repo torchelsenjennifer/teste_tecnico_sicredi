@@ -1,0 +1,15 @@
+<CodeBlock language="gitignore" editable>
+# Arquivos gerados pela aplicação
+aprovados.csv
+processamento.log
+
+# Arquivos temporários do Python
+__pycache__/
+*.pyc
+
+# Ambientes virtuais
+.venv/
+venv/
+
+# Configurações locais
+.vscode/

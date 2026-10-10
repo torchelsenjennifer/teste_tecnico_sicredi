@@ -1,7 +1,18 @@
 
 import csv
 import json
+import logging
 from pathlib import Path
+
+def configurar_log():
+	caminho = Path(__file__).resolve().parent / "processamento.log"
+
+	logging.basicConfig(
+		filename=caminho,
+		level=logging.INFO,
+		format="%(asctime)s - %(levelname)s - %(message)s",
+		encoding="utf-8"
+	)
 
 def carregar_solicitacoes():
 	caminho = Path(__file__).resolve().parent / "solicitacoes.json"
@@ -10,13 +21,22 @@ def carregar_solicitacoes():
 		with open(caminho, "r", encoding="utf-8") as arquivo:
 			solicitacoes = json.load(arquivo)
 
+		if not isinstance(solicitacoes, list):
+			raise ValueError("O arquivo JSON deve conter uma lista de solicitações.")
+
 		return solicitacoes
 
 	except FileNotFoundError:
+		logging.error("Arquivo solicitacoes.json não encontrado.")
 		print("Erro: arquivo solicitacoes.json não encontrado.")
 
-	except json.JSONDecodeError:
+	except json.JSONDecodeError as erro:
+		logging.error(f"Arquivo JSON inválido: {erro}")
 		print("Erro: o arquivo JSON possui um formato inválido.")
+
+	except(OSError, UnicodeDecodeError, ValueError) as erro:
+		logging.error(f"Erro ao carregar solicitações: {erro}")
+		print(f"Erro ao carregar solicitações: {erro}")
 
 	return None
 
@@ -52,6 +72,10 @@ def filtrar_aprovados(solicitacoes):
 			"cpf": cpf
 		})
 
+	for id_solicitacao, motivo in ignorados:
+		logging.warning(
+			f"Solicitação {id_solicitacao} ignorada: {motivo}"
+		)
 	return aprovados, ignorados
 
 def gerar_csv(aprovados):
@@ -70,24 +94,43 @@ def gerar_csv(aprovados):
 			escritor.writeheader()
 			escritor.writerows(aprovados)
 
+		logging.info(f"Arquivo CSV gerado: {caminho.name}")
 		return True
 
 	except(OSError, csv.Error) as erro:
+		logging.error(f"Erro ao gerar arquivo CSV: {erro}")
 		print(f"Erro ao gerar o arquivo CSV dos usuários APROVADOS: {erro}")
 		return False
 
 def main():
+	configurar_log()
+
+	logging.info("Início do processamento.")
+
 	solicitacoes = carregar_solicitacoes()
 
-	if solicitacoes is not None:
-		aprovados, ignorados = filtrar_aprovados(solicitacoes)
+	if solicitacoes is None:
+		logging.error("Processamento interrompido: falha na leitura do JSON.")
+		return
+	aprovados, ignorados = filtrar_aprovados(solicitacoes)
 
-		print(f"Total de registros lidos: {len(solicitacoes)}")
-		print(f"Total de registros aprovados: {len(aprovados)}")
-		print(f"Total de registros ignorados: {len(ignorados)}")
+	logging.info(f"Total de registros lidos: {len(solicitacoes)}")
+	logging.info(f"Total de registros aprovados: {len(aprovados)}")
+	logging.info(f"Total de registros ignorados: {len(ignorados)}")
 
-		if gerar_csv(aprovados):
-			print("Arquivo aprovados.csv gerado com sucesso.")
+	print(f"Total de registros lidos: {len(solicitacoes)}")
+	print(f"Total de registros aprovados: {len(aprovados)}")
+	print(f"Total de registros ignorados: {len(ignorados)}")
+
+	if gerar_csv(aprovados):
+		logging.info(f"Total de registros exportados: {len(aprovados)}")
+		print("Arquivo aprovados.csv gerado com sucesso.")
+	else:
+		logging.error("Processamento interrompido: falha na geração do CSV.")
+		return
+
+	logging.info("Processamento concluído com sucesso.")
+
 
 if __name__ == "__main__":
 	main()
