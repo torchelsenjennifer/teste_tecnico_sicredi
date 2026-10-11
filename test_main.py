@@ -4,7 +4,7 @@ import unittest
 from pathlib import Path
 from unittest.mock import patch
 
-from main import carregar_solicitacoes,filtrar_aprovados, gerar_csv
+from main import carregar_solicitacoes,filtrar_aprovados, gerar_csv, main
 
 class TestFiltrarAprovados(unittest.TestCase):
 
@@ -59,6 +59,41 @@ class TestFiltrarAprovados(unittest.TestCase):
 
 		self.assertEqual(len(aprovados), 0)
 		self.assertEqual(len(ignorados), 1)
+
+	def test_id_vazio(self):
+		solicitacoes = [
+			{
+				"id": "",
+				"nome": "Maria Silva",
+				"cpf": "12345678900",
+				"status": "APROVADO"
+			}
+		]
+
+		aprovados, ignorados = filtrar_aprovados(solicitacoes)
+
+		self.assertEqual(len(aprovados), 0)
+		self.assertEqual(len(ignorados), 1)
+		self.assertEqual(ignorados[0][1], "ID ou nome ausente ou inválido")
+
+	def test_id_com_espacos(self):
+		solicitacoes = [
+			{
+				"id": "   ",
+				"nome": "João Souza",
+				"cpf": "12345678900",
+				"status": "APROVADO"
+			}
+		]
+
+		aprovados, ignorados = filtrar_aprovados(solicitacoes)
+
+		self.assertEqual(len(aprovados), 0)
+		self.assertEqual(len(ignorados), 1)
+		self.assertEqual(
+			ignorados[0][1],
+			"ID ou nome ausente ou inválido"
+		)
 
 	def test_cpf_vazio(self):
 		solicitacoes = [
@@ -166,6 +201,44 @@ class TestGerarCSV(unittest.TestCase):
 				resultado = gerar_csv(aprovados)
 
 		self.assertFalse(resultado)
+
+class TestMain(unittest.TestCase):
+
+	def test_processamento_sucesso(self):
+		solicitacoes = [
+			{
+				"id": 1,
+				"nome": "Maria Silva",
+				"cpf": "12345678900",
+				"status": "APROVADO"
+			}
+		]
+
+		with patch("main.configurar_log"), \
+			patch("main.carregar_solicitacoes", return_value=solicitacoes), \
+			patch("main.gerar_csv", return_value=True):
+
+			resultado = main()
+
+		self.assertEqual(resultado, 0)
+
+	def test_processamento_erro_csv(self):
+		solicitacoes = [
+			{
+				"id": 1,
+				"nome": "Maria Silva",
+				"cpf": "12345678900",
+				"status": "APROVADO"
+			}
+		]
+
+		with patch("main.configurar_log"), \
+			patch("main.carregar_solicitacoes", return_value=solicitacoes), \
+			patch("main.gerar_csv", return_value=False):
+
+			resultado = main()
+
+		self.assertEqual(resultado, 1)
 
 if __name__ == "__main__":
 	unittest.main()

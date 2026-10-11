@@ -1,4 +1,3 @@
-<CodeBlock language="gitignore" editable>
 # Arquivos gerados pela aplicação
 aprovados.csv
 processamento.log

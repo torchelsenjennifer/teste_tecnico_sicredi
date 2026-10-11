@@ -1,4 +1,4 @@
-# Teste Técnico Sicredi — Processamento de Solicitações
+# Teste Técnico Sicredi - Processamento de Solicitações
 
 ## Descrição
 
@@ -66,6 +66,7 @@ Uma solicitação será exportada quando:
 
 - Possuir status igual a `APROVADO`.
 - Possuir CPF preenchido.
+- Possuir ID não nulo e não vazio
 - Possuir ID e nome válidos conforme as verificações implementadas.
 
 Registros que não atendam às condições serão ignorados e terão seus motivos registrados no log.
@@ -105,17 +106,19 @@ São utilizados diferentes níveis de log:
 
 ## Testes automatizados
 
-Foram implementados 10 testes automatizados utilizando a biblioteca nativa `unittest`, contemplando:
+Foram implementados 14 testes automatizados utilizando a biblioteca nativa `unittest`, contemplando:
 
 - Solicitações aprovadas.
 - Solicitações pendentes.
 - CPF vazio ou nulo.
+- ID vazio ou contendo somente espaços.
 - Registros com campos obrigatórios ausentes.
 - Lista de solicitações vazia.
 - Arquivo JSON não encontrado.
 - Conteúdo JSON inválido.
 - Geração e leitura do arquivo CSV.
 - Simulação de erro durante a geração do CSV.
+- Retorno de sucesso (0) e falha (1) da função principal.
 
 Para executar os testes:
 
@@ -133,14 +136,29 @@ python -m unittest -v
 - O projeto utiliza somente bibliotecas nativas para reduzir dependências.
 - O código foi organizado em funções com responsabilidades específicas, facilitando a manutenção e os testes.
 - Os arquivos de saída e log não são versionados, pois são produzidos automaticamente.
+- IDs nulos, vazios ou compostos somente por espaços são considerados inválidos.
+- A aplicação utiliza códigos de saída para indicar o resultado do processamento: 0: processamento concluído com sucesso. 1: falha na leitura do arquivo JSON ou na geração do CSV.
 
 ## Integração com BPM
 
-Em um processo de BPM, as solicitações poderiam ser recebidas por meio de um formulário, substituindo a entrada dos dados por arquivo JSON. Após o preenchimento, cada solicitação seguiria para uma etapa de análise, na qual um responsável poderia aprovar ou reprovar o cadastro. Após a conclusão dessa etapa, a automação Python seria acionada para processar os registros aprovados, aplicar as validações necessárias e gerar o arquivo CSV para utilização pelas demais áreas.
-
-Os registros ignorados e possíveis falhas seriam registrados em log, permitindo o acompanhamento e a rastreabilidade do processamento.
+Em um processo de BPM, as solicitações poderiam ser recebidas por meio de um formulário, substituindo a entrada dos dados por arquivo JSON. Após o preenchimento, cada solicitação seguiria para uma etapa de análise, na qual um responsável poderia aprovar ou reprovar o cadastro. Após a conclusão dessa etapa, a automação Python seria acionada para processar os registros aprovados, aplicar as validações necessárias e gerar o arquivo CSV para utilização pelas demais áreas. Os registros ignorados e possíveis falhas seriam registrados em log, permitindo o acompanhamento e a rastreabilidade do processamento.
 
 Relacionando essa proposta com minha experiência profissional, atualmente trabalho no desenvolvimento de um sistema de gestão de saúde que possui diferentes fluxos de cadastro, validação de informações e processamento de registros conforme regras de negócio. Embora sejam contextos diferentes, a lógica de organizar etapas, validar condições e executar ações de acordo com a situação de cada registro é semelhante à que aplicaria nessa integração com BPM.
+
+Pensando nessa integração, implementei códigos de saída na aplicação para que uma ferramenta externa consiga identificar o resultado da execução:
+
+- `0`: processamento concluído com sucesso.
+- `1`: falha na leitura do arquivo JSON ou na geração do CSV.
+
+Para verificar o código de saída após executar a aplicação, no Git Bash ou em terminais Linux, podem ser utilizados os comandos:
+
+```bash
+python main.py
+echo $?
+```
+
+Com isso, uma ferramenta responsável pelo fluxo BPM poderia verificar o código retornado pela automação e definir os próximos passos do processo. Em caso de sucesso, o arquivo CSV poderia ser disponibilizado para as áreas responsáveis. Em caso de falha, o fluxo poderia registrar uma pendência ou encaminhar uma notificação para análise.
+
 
 ## Ferramentas de consulta e inteligência artificial
 

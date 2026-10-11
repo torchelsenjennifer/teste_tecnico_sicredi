@@ -2,6 +2,7 @@
 import csv
 import json
 import logging
+import sys
 from pathlib import Path
 
 def configurar_log():
@@ -54,7 +55,7 @@ def filtrar_aprovados(solicitacoes):
 		cpf = solicitacao.get("cpf")
 		status = solicitacao.get("status")
 
-		if id_solicitacao is None or not isinstance(nome,str) or not nome.strip():
+		if id_solicitacao is None or isinstance(id_solicitacao, str) and not id_solicitacao.strip() or not isinstance(nome,str) or not nome.strip():
 			ignorados.append((id_solicitacao, "ID ou nome ausente ou inválido"))
 			continue
 
@@ -111,7 +112,8 @@ def main():
 
 	if solicitacoes is None:
 		logging.error("Processamento interrompido: falha na leitura do JSON.")
-		return
+		return 1
+
 	aprovados, ignorados = filtrar_aprovados(solicitacoes)
 
 	logging.info(f"Total de registros lidos: {len(solicitacoes)}")
@@ -122,15 +124,15 @@ def main():
 	print(f"Total de registros aprovados: {len(aprovados)}")
 	print(f"Total de registros ignorados: {len(ignorados)}")
 
-	if gerar_csv(aprovados):
-		logging.info(f"Total de registros exportados: {len(aprovados)}")
-		print("Arquivo aprovados.csv gerado com sucesso.")
-	else:
+	if not gerar_csv(aprovados):
 		logging.error("Processamento interrompido: falha na geração do CSV.")
-		return
+		return 1
+
+	logging.info(f"Total de registros exportados: {len(aprovados)}")
+	print("Arquivo aprovados.csv gerado com sucesso.")
 
 	logging.info("Processamento concluído com sucesso.")
-
+	return 0
 
 if __name__ == "__main__":
-	main()
+	sys.exit(main())
