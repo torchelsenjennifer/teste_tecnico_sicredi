@@ -29,7 +29,7 @@ Não são necessárias bibliotecas externas.
 
 ## Pré-requisitos
 
-- Python 3.10 ou superior (desenvolvido e testado com Python 3.10.6).
+- Python 3.10 ou superior instalado (desenvolvido e testado com Python 3.10.6).
 - Terminal para executar os comandos.
 
 ## Como executar
@@ -54,8 +54,16 @@ Verificar se o arquivo `solicitacoes.json` está na mesma pasta do `main.py`.
 
 **4. Executar a aplicação**
 
+**Windows (PowerShell ou Git Bash):**
+
 ```bash
 python main.py
+```
+
+**Linux ou macOS:**
+
+```bash
+python3 main.py
 ```
 
 Após a execução, serão gerados os arquivos `aprovados.csv` e `processamento.log`.
@@ -120,11 +128,21 @@ Foram implementados 14 testes automatizados utilizando a biblioteca nativa `unit
 - Simulação de erro durante a geração do CSV.
 - Retorno de sucesso (0) e falha (1) da função principal.
 
-Para executar os testes:
+Para executar os 14 testes implementados:
+
+**Windows:**
 
 ```bash
 python -m unittest -v
 ```
+
+**Linux ou macOS:**
+
+```bash
+python3 -m unittest -v
+```
+
+O resultado esperado é a execução dos 14 testes, com a mensagem `OK` ao final.
 
 ## Premissas e decisões técnicas
 
