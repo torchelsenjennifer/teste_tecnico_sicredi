@@ -12,3 +12,6 @@ venv/
 
 # Configurações locais
 .vscode/
+
+# Arquivo de entrega
+teste_tecnico_sicredi.zip
